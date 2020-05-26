@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -45,28 +46,35 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	responseBody, err := ioutil.ReadAll(resp.Body)
+
 	if err != nil {
 		return nil, err
 	}
 
-	if 200 != resp.StatusCode {
-		return nil, fmt.Errorf("%s", body)
+	if len(responseBody) == 0 {
+		return nil, fmt.Errorf("HTTP %d: %s (body empty)", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 
-	return body, nil
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%s", responseBody)
+	}
+
+	return responseBody, nil
 }
 
-func (c *Client) NodeCount() {
+func (c *Client) NodeCount() (int, error) {
 	url := fmt.Sprintf(c.baseURL + "cas/nodeCount")
 	req, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
-		log.Fatal(err)
+		return -1, err
 	}
 
 	bytes, err := c.doRequest(req)
 	if err != nil {
-		log.Fatal(err)
+		return -1, err
 	}
+
+	return strconv.Atoi(string(bytes[0]))
 }
