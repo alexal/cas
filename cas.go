@@ -75,6 +75,7 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	return responseBody, nil
 }
 
+// Connected node count.
 func (c *Client) NodeCount() (int, error) {
 	url := fmt.Sprintf(c.baseURL + "cas/nodeCount")
 	req, err := http.NewRequest("GET", url, nil)
@@ -91,6 +92,28 @@ func (c *Client) NodeCount() (int, error) {
 	return strconv.Atoi(string(bytes[0]))
 }
 
+// List connected nodes.
+func (c *Client) NodeNames() ([]string, error) {
+	url := fmt.Sprintf(c.baseURL + "cas/nodeNames")
+	req, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		//return -1, err
+	}
+
+	bytes, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+	var nodeNames []string
+	if err := json.Unmarshal(bytes, &nodeNames); err != nil {
+		return nil, fmt.Errorf("could not decode response JSON, %s: %v", string(bytes), err)
+	}
+
+	return  nodeNames, nil
+}
+
+// List of CAS nodes.
 func (c *Client) Nodes() ([]Node, error) {
 	url := fmt.Sprintf(c.baseURL + "cas/nodes")
 	req, err := http.NewRequest("GET", url, nil)
