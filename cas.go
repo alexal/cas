@@ -77,8 +77,7 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 
 // Connected node count.
 func (c *Client) NodeCount() (int, error) {
-	url := fmt.Sprintf(c.baseURL + "cas/nodeCount")
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", c.createURL("cas/nodeCount"), nil)
 
 	if err != nil {
 		return -1, err
@@ -94,8 +93,7 @@ func (c *Client) NodeCount() (int, error) {
 
 // List connected nodes.
 func (c *Client) NodeNames() ([]string, error) {
-	url := fmt.Sprintf(c.baseURL + "cas/nodeNames")
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", c.createURL("cas/nodeNames"), nil)
 
 	if err != nil {
 		//return -1, err
@@ -110,13 +108,12 @@ func (c *Client) NodeNames() ([]string, error) {
 		return nil, fmt.Errorf("could not decode response JSON, %s: %v", string(bytes), err)
 	}
 
-	return  nodeNames, nil
+	return nodeNames, nil
 }
 
 // List of CAS nodes.
 func (c *Client) Nodes() ([]Node, error) {
-	url := fmt.Sprintf(c.baseURL + "cas/nodes")
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", c.createURL("cas/nodes"), nil)
 
 	if err != nil {
 		return nil, err
