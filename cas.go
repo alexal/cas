@@ -2,6 +2,7 @@ package cas
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -20,6 +21,17 @@ type Client struct {
 	userName string
 	password string
 	debugLog *log.Logger
+}
+
+type Node struct {
+	Name         string
+	Port         int
+	Type         string
+	Connected    bool
+	PID          int
+	HTTPPort     int
+	HTTPProtocol string
+	UUID         string
 }
 
 func NewBasicAuthClient(url, username, password string) *Client {
@@ -77,4 +89,25 @@ func (c *Client) NodeCount() (int, error) {
 	}
 
 	return strconv.Atoi(string(bytes[0]))
+}
+
+func (c *Client) Nodes() ([]Node, error) {
+	url := fmt.Sprintf(c.baseURL + "cas/nodes")
+	req, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var nodes []Node
+	if err := json.Unmarshal(bytes, &nodes); err != nil {
+		return nil, fmt.Errorf("could not decode response JSON, %s: %v", string(bytes), err)
+	}
+
+	return nodes, nil
 }
