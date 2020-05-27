@@ -18,6 +18,31 @@ type Node struct {
 	UUID         string
 }
 
+type CPULoad struct {
+	CPULoad float32
+}
+
+// Get the 1 minute CPU load average for the system.
+func (c *Client) Metrics() (float32, error) {
+	req, err := http.NewRequest("GET", c.createURL("cas/metrics"), nil)
+
+	if err != nil {
+		return -1, err
+	}
+
+	bytes, err := c.doRequest(req)
+	if err != nil {
+		return -1, err
+	}
+
+	var cpuLoad CPULoad
+	if err := json.Unmarshal(bytes, &cpuLoad); err != nil {
+		return -1, fmt.Errorf("could not decode response JSON, %s: %v", string(bytes), err)
+	}
+
+	return cpuLoad.CPULoad, nil
+}
+
 // Connected node count.
 func (c *Client) NodeCount() (int, error) {
 	req, err := http.NewRequest("GET", c.createURL("cas/nodeCount"), nil)
